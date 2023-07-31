@@ -1,0 +1,163 @@
+# Your Code
+from os.path import join
+pathPrefix = "./drive/My Drive/"
+
+fileName = "Medium_DS_Articles_2021_Dataset.csv"
+
+uniqueTags = []
+tempArray = []
+numOfTags = 0
+with open(join(pathPrefix,fileName)) as myFile:
+  skipFirstLine = myFile.readline().strip()
+  for line in myFile:
+    values = line.strip().split(",")
+    tempArray.append([str(value) for value in values])  
+    if values[5] not in uniqueTags:
+      uniqueTags.append(values[5])
+      numOfTags +=1
+
+    
+
+data = np.array(tempArray)
+
+print("Number of rows: {}, columns: {}".format(data.shape[0], data.shape[1]))
+print("Number of unique Tags:", numOfTags)
+
+
+
+# Your Code
+
+tags = {}
+
+for line in data:
+  if line[5] not in tags:
+    tags[line[5]] = 1
+  else:
+    tags[line[5]] +=1
+
+    
+
+#data = np.array(tempArray)
+
+sortedTags = sorted(tags.items(), key=lambda item: item[1], reverse=True)
+for i in range(len(sortedTags)):
+  print('{:<22}  {:<1}  {:<4}'.format(sortedTags[i][0], "-", sortedTags[i][1]),sep='')
+
+
+# Your Code
+def validate_date_format(datecolumn):
+  checker = True
+  for i in datecolumn:
+    
+    if(i[4]!="-" or i[7]!="-"):
+      checker = False
+    else:
+      checker = True
+      
+  return checker
+
+
+for line in data:
+  
+  if (line[6][0] == "("): 
+     
+    tempStr = line[6][1:5] + "-" + line[6][9:11] + "-" + line[6][15:17]
+    line[6] = tempStr   
+    
+  else:    
+    line[6] = line[6].replace(" ", "-", 2)
+    
+validate_date_format(data[:,6])
+
+
+# Your Code
+
+deletedMonthCount = {}
+ctr = 0
+
+newDataTemp = []
+for line in data:
+  if (line[5] == "X"):
+    currentMonth = int(line[6][5:7])
+    if currentMonth not in deletedMonthCount:
+      deletedMonthCount[currentMonth] = 1
+    else:
+      deletedMonthCount[currentMonth] += 1
+
+  else:
+    newDataTemp.append(line)
+
+data = np.array(newDataTemp)
+    
+sortedMonths = sorted(deletedMonthCount.items(), key=lambda item: item[0], reverse=False)
+sortedMonthsNP = np.array(sortedMonths)
+
+monthsChart = ["Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."]
+valuesChart = sortedMonthsNP[:,1]
+
+plt.bar(monthsChart,valuesChart, color = "red")
+plt.xlabel("Months")
+plt.ylabel("Number of deleted articles")
+plt.title("Total number of deleted articles per each month")
+
+plt.show()
+
+
+
+# Your Code
+
+print("After cleaning, Number of rows: {}, columns: {}".format(data.shape[0], data.shape[1]))
+
+tempArr = []
+
+for x in data[:,4]:
+  slashIdx = x.find("-")
+  tempVal = x[:slashIdx]
+  tempArr.append(float(tempVal))
+
+readTimeData = np.array(tempArr)
+
+minVal = np.max(readTimeData)
+maxVal = np.min(readTimeData)
+sumVal = np.sum(readTimeData)
+
+print("Maximum reading time: {}\nMinimum reading time: {}\nAverage reading time: {}". format(minVal, maxVal, (sumVal/data.shape[0])))
+
+
+
+# Your Code
+
+newTempArr = []
+tagInteraction = {}
+
+for line in data:
+  
+  interaction = 0
+  checker = 1
+ 
+  if line[2] != "0.0" or line[3] != "0.0":
+    interaction = 1
+  
+  arr = np.array(line)
+  arr = np.insert(arr,len(arr) , interaction)
+  newTempArr.append([value for value in arr])  
+
+ 
+newDataNP = np.array(newTempArr)
+totalCounter = 0
+
+for line in newDataNP:
+
+  
+  if int(line[7]) == 1 and line[5] not in tagInteraction:
+    tagInteraction[line[5]] = 1
+    totalCounter += 1
+    
+  elif int(line[7]) == 1 and line[5] in tagInteraction:
+    tagInteraction[line[5]] += 1
+    totalCounter += 1
+
+sortedTagInteraction = sorted(tagInteraction.items(), key=lambda item: item[1], reverse=True)
+
+print(sortedTagInteraction[0][0], "-", sortedTagInteraction[0][1]/tags[sortedTagInteraction[0][0]])
+
